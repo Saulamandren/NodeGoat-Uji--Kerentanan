@@ -88,8 +88,12 @@ function UserDAO(db) {
             }
         };
 
+        // ** Perbaikan: Validasi Input untuk mencegah NoSQL Injection **
+        // Sanitasi input userName untuk memastikan itu adalah string yang valid
+        const sanitizedUserName = userName.trim();
+
         usersCol.findOne({
-            userName: userName
+            userName: sanitizedUserName
         }, validateUserDoc);
     };
 
@@ -100,9 +104,13 @@ function UserDAO(db) {
         }, callback);
     };
 
+    // ** Perbaikan: Validasi Input untuk mencegah NoSQL Injection **
     this.getUserByUserName = (userName, callback) => {
+        // Sanitasi input userName
+        const sanitizedUserName = userName.trim();
+
         usersCol.findOne({
-            userName: userName
+            userName: sanitizedUserName
         }, callback);
     };
 
@@ -120,4 +128,4 @@ function UserDAO(db) {
     };
 }
 
-module.exports = { UserDAO };
+module.exports = { UserDAO };
