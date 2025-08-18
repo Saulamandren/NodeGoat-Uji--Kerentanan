@@ -9,9 +9,6 @@ function ResearchHandler(db) {
 
     const researchDAO = new ResearchDAO(db);
 
-    // Daftar domain yang diperbolehkan
-    const validDomains = ['example.com', 'trusted-domain.com'];
-
     this.displayResearch = (req, res) => {
 
         if (req.query.symbol && req.query.url) {
@@ -20,16 +17,6 @@ function ResearchHandler(db) {
                 // Membuat objek URL untuk memvalidasi dan memeriksa hostname
                 const urlObj = new URL(url);
                 
-                // Validasi apakah domain ada di whitelist
-                if (!validDomains.includes(urlObj.hostname)) {
-                    return res.status(400).send('Invalid domain');
-                }
-
-                // Periksa apakah URL mengarah ke server internal atau berpotensi berbahaya
-                if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
-                    return res.status(400).send('Invalid URL: Localhost addresses are not allowed.');
-                }
-
                 // Jika valid, lanjutkan permintaan
                 return needle.get(url, (error, newResponse, body) => {
                     if (!error && newResponse.statusCode === 200) {
