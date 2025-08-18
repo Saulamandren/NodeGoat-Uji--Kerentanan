@@ -9,13 +9,13 @@ function ResearchHandler(db) {
 
     const researchDAO = new ResearchDAO(db);
 
-    // Daftar domain yang diperbolehkan (whitelist)
+    // Daftar domain yang diperbolehkan
     const validDomains = ['example.com', 'trusted-domain.com'];
 
     this.displayResearch = (req, res) => {
+
         if (req.query.symbol && req.query.url) {
             const url = req.query.url + req.query.symbol;
-
             try {
                 // Membuat objek URL untuk memvalidasi dan memeriksa hostname
                 const urlObj = new URL(url);
