@@ -4,7 +4,7 @@ const express = require("express");
 const favicon = require("serve-favicon");
 const bodyParser = require("body-parser");
 const session = require("express-session");
-const csrf = require("csurf"); // **Perbaikan: Menambahkan csrf middleware**
+const csrf = require("csurf"); // CSRF protection middleware
 const consolidate = require("consolidate"); // Templating library adapter for Express
 const swig = require("swig");
 const MongoClient = require("mongodb").MongoClient; // Driver for connecting to MongoDB
@@ -27,24 +27,27 @@ MongoClient.connect(db, (err, db) => {
 
     // Express middleware to populate "req.body" so we can access POST variables
     app.use(bodyParser.json());
-    app.use(bodyParser.urlencoded({
-        extended: false
-    }));
+    app.use(bodyParser.urlencoded({ extended: false }));
 
     // Enable session management using express middleware
     app.use(session({
         secret: cookieSecret,
         saveUninitialized: true,
         resave: true,
+        cookie: {
+            secure: process.env.NODE_ENV === 'production', // Enable cookies only on HTTPS
+            httpOnly: true, // Prevent access to cookie via JavaScript
+            sameSite: 'strict' // CSRF protection: prevent cross-site cookie sending
+        }
     }));
 
-    // **Perbaikan: Menambahkan CSRF middleware untuk melindungi aplikasi dari CSRF**
+    // CSRF protection middleware
     const csrfProtection = csrf();
-    app.use(csrfProtection); // Aktifkan CSRF protection middleware
+    app.use(csrfProtection); // Enable CSRF protection middleware
 
-    // Membuat token CSRF tersedia di setiap template
+    // Make CSRF token available in every template
     app.use((req, res, next) => {
-        res.locals.csrftoken = req.csrfToken(); // Set CSRF token ke template
+        res.locals.csrftoken = req.csrfToken(); // Set CSRF token to the template
         next();
     });
 
@@ -69,7 +72,7 @@ MongoClient.connect(db, (err, db) => {
         autoescape: false
     });
 
-    // Insecure HTTP connection
+    // Insecure HTTP connection (Should be HTTPS in production)
     http.createServer(app).listen(port, () => {
         console.log(`Express http server listening on port ${port}`);
     });
