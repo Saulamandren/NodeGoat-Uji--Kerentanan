@@ -63,10 +63,6 @@ const index = (app, db) => {
     // Benefits Page
     app.get("/benefits", isLoggedIn, benefitsHandler.displayBenefits);
     app.post("/benefits", isLoggedIn, benefitsHandler.updateBenefits);
-    /* Fix for A7 - checks user role to implement Function Level Access Control
-     app.get("/benefits", isLoggedIn, isAdmin, benefitsHandler.displayBenefits);
-     app.post("/benefits", isLoggedIn, isAdmin, benefitsHandler.updateBenefits);
-     */
 
     // Allocations Page
     app.get("/allocations/:userId", isLoggedIn, allocationsHandler.displayAllocations);
@@ -77,8 +73,24 @@ const index = (app, db) => {
 
     // Handle redirect for learning resources link
     app.get("/learn", isLoggedIn, (req, res) => {
-        // Insecure way to handle redirects by taking redirect url from query string
-        return res.redirect(req.query.url);
+        // Daftar domain yang diperbolehkan
+        const validDomains = ['example.com', 'trusted-domain.com'];
+
+        // Validasi URL yang diberikan oleh pengguna
+        try {
+            const url = req.query.url;
+            const urlObj = new URL(url);
+
+            // Memeriksa apakah hostname URL ada dalam whitelist
+            if (!validDomains.includes(urlObj.hostname)) {
+                return res.status(400).send('Invalid domain');
+            }
+
+            // Jika valid, lanjutkan dengan redirect
+            return res.redirect(url);
+        } catch (err) {
+            return res.status(400).send('Invalid URL');
+        }
     });
 
     // Research Page
