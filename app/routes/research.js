@@ -25,6 +25,11 @@ function ResearchHandler(db) {
                     return res.status(400).send('Invalid domain');
                 }
 
+                // Periksa apakah URL mengarah ke server internal atau berpotensi berbahaya
+                if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
+                    return res.status(400).send('Invalid URL: Localhost addresses are not allowed.');
+                }
+
                 // Jika valid, lanjutkan permintaan
                 return needle.get(url, (error, newResponse, body) => {
                     if (!error && newResponse.statusCode === 200) {
